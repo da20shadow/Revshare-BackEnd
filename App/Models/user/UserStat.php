@@ -4,11 +4,28 @@ namespace App\Models\user;
 
 class UserStat
 {
+    private int $id;
     private int $shares;
     private float $balance;
     private float $withdrawals;
     private int $refId;
     private float $refCom;
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setId(int $id): void
+    {
+        $this->id = $id;
+    }
 
     /**
      * @return int
