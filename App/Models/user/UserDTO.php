@@ -13,7 +13,24 @@ class UserDTO
     private string $email;
     private string $password;
     private int $refId;
+    private int $role;
     private float $refCom;
+
+    /**
+     * @return int
+     */
+    public function getRole(): int
+    {
+        return $this->role;
+    }
+
+    /**
+     * @param int $role
+     */
+    public function setRole(int $role): void
+    {
+        $this->role = $role;
+    }
 
     /**
      * @return float
