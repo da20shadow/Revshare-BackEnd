@@ -23,20 +23,18 @@ class UserService implements UserServiceInterface
     public function register($userInputs)
     {
         if (!isset($userInputs['username']) || !isset($userInputs['email'])
-            || !isset($userInputs['password']) || !isset($userInputs['re_password']))
-        {
+            || !isset($userInputs['password']) || !isset($userInputs['re_password'])) {
             http_response_code(403);
             echo json_encode([
-                'message' =>'All fields are required!'
+                'message' => 'All fields are required!'
             ]);
             return;
         }
 
-        if ($userInputs['password'] != $userInputs['re_password'])
-        {
+        if ($userInputs['password'] != $userInputs['re_password']) {
             http_response_code(403);
             echo json_encode([
-                'message' =>'Password and re-password does not match!!'
+                'message' => 'Password and re-password does not match!!'
             ]);
             return;
         }
@@ -46,21 +44,19 @@ class UserService implements UserServiceInterface
         $password = $userInputs['password'];
 
         $userFromDb = $this->userRepository->getUserByUsername($username);
-        if ($userFromDb instanceof UserDTO)
-        {
+        if ($userFromDb instanceof UserDTO) {
             http_response_code(403);
             echo json_encode([
-                'message' =>'This username already registered!'
+                'message' => 'This username already registered!'
             ]);
             return;
         }
 
         $userFromDb = $this->userRepository->getUserByEmail($email);
-        if ($userFromDb instanceof UserDTO)
-        {
+        if ($userFromDb instanceof UserDTO) {
             http_response_code(403);
             echo json_encode([
-                'message' =>'This email already registered!'
+                'message' => 'This email already registered!'
             ]);
             return;
         }
@@ -71,7 +67,7 @@ class UserService implements UserServiceInterface
             $user->setEmail($email);
             $user->setPassword($password);
 
-        }catch (Exception $exception){
+        } catch (Exception $exception) {
             http_response_code(403);
             echo json_encode([
                 'message' => $exception->getMessage()
@@ -84,47 +80,47 @@ class UserService implements UserServiceInterface
             && $userInputs['refer_id'] > 0) {
             $refer_id = $userInputs['refer_id'];
         }
-        $result = $this->userRepository->insert($user,$refer_id);
+        $result = $this->userRepository->insert($user, $refer_id);
 
         if (!$result) {
             http_response_code(403);
             echo json_encode([
-                'message' =>'An Error Occur, try again latter!'
+                'message' => 'An Error Occur, try again latter!'
             ]);
         }
         http_response_code(201);
         echo json_encode([
-            'message' =>'Successfully Registered!'
+            'message' => 'Successfully Registered!'
         ]);
 
     }
 
     public function login($userInputs)
     {
-        if (!isset($userInputs['email']) || !isset($userInputs['password'])){
+        if (!isset($userInputs['email']) || !isset($userInputs['password'])) {
             http_response_code(403);
             echo json_encode([
                 'message' => 'Empty Email or Password!'
-            ],JSON_PRETTY_PRINT);
+            ], JSON_PRETTY_PRINT);
         }
         $password = $userInputs['password'];
 
         $userFromDb = $this->userRepository->getUserByEmail($userInputs['email']);
 
-        if (null === $userFromDb){
+        if (null === $userFromDb) {
             http_response_code(403);
             echo json_encode([
                 'message' => 'Wrong Email or Password!'
-            ],JSON_PRETTY_PRINT);
+            ], JSON_PRETTY_PRINT);
             return;
         }
 
-        if (false === $this->encryptionService->verify($password,$userFromDb->getPassword())){
+        if (false === $this->encryptionService->verify($password, $userFromDb->getPassword())) {
 
             http_response_code(403);
             echo json_encode([
                 'message' => 'Wrong Email or Password!'
-            ],JSON_PRETTY_PRINT);
+            ], JSON_PRETTY_PRINT);
             return;
         }
 
@@ -132,19 +128,96 @@ class UserService implements UserServiceInterface
             $token = AuthValidator::createToken($userFromDb);
 
             http_response_code(200);
-            echo json_encode($token,JSON_PRETTY_PRINT);
+            echo json_encode($token, JSON_PRETTY_PRINT);
 
         } catch (Exception $e) {
             http_response_code(403);
             echo json_encode([
                 'message' => 'Error! ' . $e->getMessage()
-            ],JSON_PRETTY_PRINT);
+            ], JSON_PRETTY_PRINT);
         }
     }
 
-    public function update($userInputs)
+    public function update($userInputs,$user_id)
     {
-        // TODO: Implement update() method.
+        $userFromDB = $this->userRepository->getUserById($user_id);
+
+        if (!$userFromDB instanceof UserDTO){
+            http_response_code(403);
+            echo json_encode([
+                'message' => 'Such user not exist!'
+            ]);
+            return;
+        }
+
+        if (isset($userInputs['password']) && $userInputs['password'] != ''
+        && isset($userInputs['newPassword']) && $userInputs['newPassword'] != ''){
+
+            if (false === $this->encryptionService->verify($userInputs['password'], $userFromDB->getPassword())) {
+
+                http_response_code(403);
+                echo json_encode([
+                    'message' => 'Wrong Password!'
+                ], JSON_PRETTY_PRINT);
+                return;
+            }
+
+            try {
+                $userFromDB->setPassword($userInputs['newPassword']);
+            }catch (Exception $exception){
+                http_response_code(403);
+                echo json_encode([
+                    'message' => $exception->getMessage()
+                ]);
+                return;
+            }
+            $result = $this->userRepository->update($userFromDB,'password');
+            if (!$result){
+                return;
+            }
+            http_response_code(200);
+            echo json_encode([
+                'message' => 'Successfully updated password!'
+            ]);
+
+        }
+        else if (isset($userInputs['email']) && $userInputs['email'] != ''
+            && isset($userInputs['newEmail']) && $userInputs['newEmail'] != ''){
+
+            if ($userInputs['email'] !== $userFromDB->getEmail()){
+                http_response_code(403);
+                echo json_encode([
+                    'message' => 'Wrong Email!'
+                ]);
+                return;
+            }
+
+            try {
+                $userFromDB->setEmail($userInputs['newEmail']);
+            }catch (Exception $exception){
+                http_response_code(403);
+                echo json_encode([
+                    'message' => $exception->getMessage()
+                ]);
+                return;
+            }
+            $result = $this->userRepository->update($userFromDB,'email');
+            if (!$result){
+                return;
+            }
+            http_response_code(200);
+            echo json_encode([
+                'message' => 'Successfully updated email!'
+            ]);
+
+        }else {
+
+            http_response_code(403);
+            echo json_encode([
+                'message' => 'An Error Occur! Please, try again or contact us!'
+            ]);
+
+        }
     }
 
     public function delete($userInputs)
@@ -172,7 +245,7 @@ class UserService implements UserServiceInterface
     public function getUserReferrals($user_id)
     {
         $referralsGenerator = $this->userRepository->getUserReferrals($user_id);
-        if (null === $referralsGenerator){
+        if (null === $referralsGenerator) {
             http_response_code(403);
             echo json_encode([
                 'message' => 'Error! Please, try again or contact us!'
@@ -192,10 +265,10 @@ class UserService implements UserServiceInterface
     {
         $userStat = $this->userRepository->getUserAccountStat($user_id);
 
-        if (null === $userStat){
+        if (null === $userStat) {
             http_response_code(403);
             echo json_encode([
-                'message'=>'An Error Occur! Please, try again or contact the support!'],
+                'message' => 'An Error Occur! Please, try again or contact the support!'],
                 JSON_PRETTY_PRINT);
             return;
         }
@@ -207,7 +280,7 @@ class UserService implements UserServiceInterface
             "withdrawals" => $userStat->getWithdrawals(),
             "refId" => $userStat->getRefId(),
             "refCom" => $userStat->getRefCom()
-        ],JSON_PRETTY_PRINT);
+        ], JSON_PRETTY_PRINT);
     }
 
     public function createUserDTO($userInputs)
@@ -231,6 +304,6 @@ class UserService implements UserServiceInterface
                 'refCom' => $user->getRefCom()
             ]);
         }
-        return ['referrals'=>$users,'total'=>$total,'total_commission'=>$total_commission];
+        return ['referrals' => $users, 'total' => $total, 'total_commission' => $total_commission];
     }
 }
