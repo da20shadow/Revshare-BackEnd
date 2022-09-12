@@ -6,7 +6,7 @@ interface UserServiceInterface
 {
     public function register($userInputs);
     public function login($userInputs);
-    public function update($userInputs);
+    public function update($userInputs,$user_id);
     public function delete($userInputs);
     public function getUserReferrals($user_id);
     public function getUserById($user_id);
