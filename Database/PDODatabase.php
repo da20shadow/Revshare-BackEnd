@@ -8,7 +8,7 @@ use PDO;
 
 class PDODatabase implements PDODatabaseInterface
 {
-    private PDO $PDO;
+    public PDO $PDO;
 
     /**
      * @param PDO $db
@@ -23,4 +23,14 @@ class PDODatabase implements PDODatabaseInterface
         $stmt = $this->PDO->prepare($query);
         return new PDOPreparedStatement($stmt);
     }
+
+    /**
+     * @return PDO
+     */
+    public function getPDO(): PDO
+    {
+        return $this->PDO;
+    }
+
+
 }
