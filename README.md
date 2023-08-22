@@ -8,10 +8,10 @@ PHP
 MySQL
 
 ## Features Implemented:
-MVC Structure: The backend follows the Model-View-Controller architecture for organized code.
-User Management: Handles user registration, login, and account information.
-Share Transactions: Manages share purchases and ownership details.
-Profit Distribution: Calculates and distributes dividend profits to shareholders.
+### MVC Structure: The backend follows the Model-View-Controller architecture for organized code.
+### User Management: Handles user registration, login, and account information.
+### Share Transactions: Manages share purchases and ownership details.
+### Profit Distribution: Calculates and distributes dividend profits to shareholders.
 
 ## Future Enhancements:
 Implement authentication and authorization for secure user interactions.
